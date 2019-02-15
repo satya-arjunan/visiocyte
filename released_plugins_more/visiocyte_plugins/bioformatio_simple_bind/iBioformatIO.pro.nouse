@@ -1,0 +1,29 @@
+
+TEMPLATE      = lib
+CONFIG       += qt plugin warn_off
+#CONFIG       += release x86_64
+
+unix {VISIOCYTEMAINDIR = ../../../visiocyte_main
+}
+win32{VISIOCYTEMAINDIR = ..\\..\\..\\visiocyte_main
+}
+
+INCLUDEPATH  += $$VISIOCYTEMAINDIR/basic_c_fun
+INCLUDEPATH  += $$VISIOCYTEMAINDIR/common_lib/include
+
+HEADERS       = iBioformatIO.h
+
+SOURCES       = iBioformatIO.cpp
+SOURCES      += $$VISIOCYTEMAINDIR/basic_c_fun/visiocyte_message.cpp
+
+TARGET        = $$qtLibraryTarget(imageIO_Bioformat)
+DESTDIR       = $$VISIOCYTEMAINDIR/../bin/plugins/data_IO/load_image_using_Bioformats
+
+win32 {
+        QMAKE_POST_LINK = copy loci_tools.jar $$VISIOCYTEMAINDIR\\..\\bin\\
+}
+else {
+        QMAKE_POST_LINK = cp loci_tools.jar $$VISIOCYTEMAINDIR/../bin/
+}
+
+

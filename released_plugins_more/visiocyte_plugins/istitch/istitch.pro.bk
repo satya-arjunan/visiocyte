@@ -1,0 +1,39 @@
+
+TEMPLATE      = lib
+CONFIG       += qt plugin warn_off
+#CONFIG       += release x86_64
+
+VISIOCYTEMAINDIR = ../../../visiocyte_main
+
+INCLUDEPATH  += $$VISIOCYTEMAINDIR/basic_c_fun
+INCLUDEPATH  += $$VISIOCYTEMAINDIR/common_lib/include
+
+HEADERS       = istitch.h 
+HEADERS      +=	istitch_gui.h
+HEADERS      +=	y_imglib.h
+HEADERS      +=	$$VISIOCYTEMAINDIR/basic_c_fun/stackutil.h
+HEADERS      +=	$$VISIOCYTEMAINDIR/basic_c_fun/mg_utilities.h
+HEADERS      += $$VISIOCYTEMAINDIR/basic_c_fun/mg_image_lib.h
+
+SOURCES       = istitch.cpp
+SOURCES      += $$VISIOCYTEMAINDIR/basic_c_fun/stackutil.cpp
+SOURCES      +=	$$VISIOCYTEMAINDIR/basic_c_fun/mg_utilities.cpp
+SOURCES      +=	$$VISIOCYTEMAINDIR/basic_c_fun/mg_image_lib.cpp
+
+
+win32{
+    LIBS	     += -L$$VISIOCYTEMAINDIR/common_lib/winlib64 -llibtiff
+    LIBS	     += -L$$VISIOCYTEMAINDIR/common_lib/winlib64 -llibfftw3f-3
+#    LIBS	     += -L$$VISIOCYTEMAINDIR/common_lib/winlib64 -llibfftw3l-3
+#    LIBS	     += -L$$VISIOCYTEMAINDIR/common_lib/winlib64 -llibfftw3-3
+    }
+unix{
+     LIBS	  += -lvisiocytefftw3f -lvisiocytefftw3f_threads
+     LIBS         += -lm -L$$VISIOCYTEMAINDIR/common_lib/lib -lvisiocytetiff
+     LIBS         += -lpthread
+}
+TARGET        = $$qtLibraryTarget(imageStitch)
+DESTDIR       = $$VISIOCYTEMAINDIR/../bin/plugins/image_stitching/istitch
+
+RESOURCE     += istitch.qrc
+

@@ -1,0 +1,11 @@
+if(TIFF_INCLUDE_DIR AND FFTW_INCLUDE_DIR AND Boost_INCLUDE_DIR)
+    set(PLUGIN_HEADERS istitch.h istitch_gui.h) # Q_OBJECT macro containing files only
+    set(PLUGIN_DIRECTORY_NAME image_stitching/istitch)
+    set(PLUGIN_SOURCES istitch.cpp istitch.h istitch_gui.h y_imglib.h)
+    include_directories(${TIFF_INCLUDE_DIR})
+    include_directories(${Boost_INCLUDE_DIR})
+    configure_visiocyte_plugin(imageStitch)
+    target_link_libraries(imageStitch ${FFTW_LIBRARY})
+else()
+    message("istitch visiocyte plugin will not be built because it needs both FFTW or TIFF libraries")
+endif()

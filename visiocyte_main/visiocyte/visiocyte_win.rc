@@ -1,0 +1,5 @@
+IDI_ICON1 ICON DISCARDABLE pic/visiocyteIcon.ico
+app	ICON	pic/visiocyteIcon.ico
+ICONS1	ICON	pic/visiocyteIcon.ico
+IDR_MAINFRAME ICON DISCARDABLE pic/visiocyteIcon.ico
+

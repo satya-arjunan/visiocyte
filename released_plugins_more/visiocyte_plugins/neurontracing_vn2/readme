@@ -1,0 +1,18 @@
+VISIOCYTENeuron2: An integrated Neuron Tracer.
+
+--- How to build.
+
+This package contains both the Visiocyte plugin for neuron tracing as well as the 
+standalone programs of neuron tracing. 
+
+In most cases, one will only need to build the Visiocyte neuron tracing plugin. To
+do that, simple qmake followed by make. Then you can run Visiocyte (in either the 
+menu mode or command line mode) to trace neurons.
+
+If needed, one can always enter the respective "app1", "app2", or "neuron_radius" 
+folders to run "qmake", or "make" to build the standalone programs.
+
+by Hanchuan Peng, 2012-12-14.
+
+--- This folder is put to Visiocyte tool folder on April 19, 2013.
+

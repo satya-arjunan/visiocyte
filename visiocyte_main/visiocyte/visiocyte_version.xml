@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+<visiocyte_version>
+<visiocyte_component
+    name="visiocyte"
+    version="2.841"
+    platform="Mac_64-bit"
+    href="../work/visiocyte_external/bin/visiocyte64.app/Contents/MacOS/visiocyte64"
+/>
+</visiocyte_version>
+

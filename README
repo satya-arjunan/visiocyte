@@ -1,0 +1,42 @@
+This code repository contains the source code of the Visiocyte project (once called 'VISIOCYTE'),an 
+open source 3D/4D/5D image visualization and analysis software for bioimage analysis. It is
+a cross-platform (Mac, Linux, and Windows) tool for visualizing large-scale (gigabytes,
+and 64-bit data) image volumes and surface objects.
+
+There are a few sub-folders:
+* bin:                     the folder where the final executable and plugins will be copied to
+* visiocyte_main:                the main Visiocyte program.
+* matlab_io_basicdatatype: matlab toolbox for file IO of some basic Visiocyte data formats,
+                           including image file, surface files, neuron, markers, etc.
+* imagej_io:               imagej plugin toolboxes for file IO of some basic Visiocyte data formats.
+* released_plugins:        the "standard" Visiocyte plugins, including both examples and some
+                           real utilities.
+
+
+*** Note that different sub-folders may contain different software LICENSES. You MUST agree to
+these license terms before you access any parts of these source code.
+
+
+* How to build the Visiocyte program 
+
+Please follow the build instructions here:
+     https://github.com/Visiocyte/Visiocyte_Wiki/wiki/BuildVisiocyte.wiki
+
+
+If you write/use additional plugins for Visiocyte, be sure to put these plugins into a subfolder
+called "plugins", which should be in the same folder where the executable of visiocyte program resides.
+You can then use VISIOCYTE programs to rescan the plugins, without the need to restart VISIOCYTE. Of course,
+these plugins should be produced using the same version of QT (of compatible versions), the same
+operating system, the same compiler, and the same release type ("Release" or "Debug") of the
+build.
+
+* License
+
+Visiocyte used a slightly modified revised MIT license, see detail here https://github.com/Visiocyte/Visiocyte_Wiki/wiki/LicenseAndAgreement.wiki .
+
+* Questions
+
+If you have questions, please check the documentations on the Visiocyte website: http://visiocyte.org , 
+and the wiki pages: https://github.com/Visiocyte/Visiocyte_Wiki/wiki/.
+You could find answers of FAQs and submmit your questions using the following help forum:
+https://www.nitrc.org/forum/forum.php?forum_id=1553.

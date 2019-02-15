@@ -1,0 +1,390 @@
+#!/bin/bash
+shopt -s expand_aliases;
+
+#build_visiocyte: this is a shell program to build the visiocyte program for Mac
+# 2008-08-22 by Hanchuan Peng
+# 080927 update by RZC
+# 090630 update by YY
+# 090801 updated by PHC
+# 090910 updated by RZC
+# 091012 updated by PHC
+# 100805 updated by PHC, add -n for 32bit compilation on Snow Leopard
+# 100807 updated by PHC, add the libtiff compile so that increase the convenience
+# 100808 updated by PHC. fix a series of flag bugs
+# 100817 updated by PHC. add a new -T option
+# 101119 updated by PHC. remove the visiocyte bundle for Mac
+# 101202: re-enable the bundle again
+# 110203: updated by PHC. make -T also build fftw (needed for stitching plugin)
+# 110710: updated by RZC, add -noplugins 
+# 110711: updated by RZC, change ARGS,QARGS to ARG_LIB,ARG_VISIOCYTE 
+# 110801: updated by RZC, add -norun 
+# 111108: updated by PHC, use visiocyte instead of visiocyte
+# 140930: change tiff from 3.8.2.1 to 4.02 to support bigtiff. suggested by Gib Bogle and tested by Brian Long and Zhi Zhou
+#
+# Arguments:
+#    -jx                        #compile using some 'x' number of processors 
+#    -n                         #32bit compiling 
+#    -m                         #64bit compiling 
+#    -B                         #rebuild everything (except LIBTIFF library) 
+#    -T                         #rebuild LIBTIFF and LIBFFTW libraries 
+#    -noplugins                 #skip building plugins
+# 
+# Known problems: 
+#    (*) On Mac 10.4.11, Tiger, it seems bash does not recognize A+=" B" command. Thus the
+#        plugins will not build automatically after I added -T option.
+#
+# examples: 
+#    sh build.macx
+#    sh build.macx debug
+#    sh build.macx release
+#    sh build.macx clean
+#    sh build.macx all
+#    sh build.macx -B            #force to rebuild files listed in makefile (without rebuild tiff/fftw library) 
+#    sh build.macx -m            #make for 64-bit (without rebuild tiff/fftw library) 
+#    sh build.macx -B -m -j4 -T    #rebuild for 64-bit (not depend on order), including the TIF and FFTW libraries
+#    sh build.macx -B -n -j4 -T    #rebuild for 32-bit (not depend on order), including the TIF and FFTW libraries
+
+
+VISIOCYTE_PRO_FILE="visiocyte64.pro"    # default project file for qmake
+
+SYSTEMBITS="64"             # default use 64bit libtiff
+TIFFCOMPILE="NO"            # default do not compile libtiff
+FFTWCOMPILE="NO"            # default do not compile libfftw
+VISIOCYTEPLUGINSCOMPILE="NO"      # default do not compile visiocyte plugins
+NEWMATCOMPILE="NO"          # default do not compile newmat
+MYLIBCOMPILE="NO"           # default do not comple mylibtiff
+SKIPVISIOCYTEPLUGINS="NO"         # default do not skip building plugins
+SKIPVISIOCYTEAPP="NO"         	# default do not skip running visiocyte.app
+
+ARG_LIB=
+QMAKE_CONFIG=
+ARG_VISIOCYTE=
+ARG_PLUGINS=
+ARG_MYLIBTIFF=
+
+# for each arg 
+
+for arg in $*; do
+  #echo $arg		
+
+   #filter special switch
+   if [ $arg == "-noplugins" ]; then
+      SKIPVISIOCYTEPLUGINS="YES"
+	  continue
+   fi
+   if [ $arg == "-norun" ]; then
+      SKIPVISIOCYTEAPP="YES"
+	  continue
+   fi
+   if [ $arg == "-T" ]; then
+      TIFFCOMPILE="YES"
+      MYLIBCOMPILE="YES"
+	  FFTWCOMPILE="YES"
+	  continue
+   fi
+   
+   #other switch copy to plugins 
+   ARG_PLUGINS+=" $arg"  	  
+  
+   #filter for make target of lib
+   if [ $arg == "debug" -o $arg == "release" ]; then
+      ARG_LIB+=" all"        # mac platform make doesn't has debug/release traget
+      continue
+   fi
+   if [ $arg == "clean" -o $arg == "all" ]; then
+      ARG_LIB+=" $arg"
+      ARG_VISIOCYTE+=" $arg"
+      continue
+   fi
+
+   if [ $arg == "-B" ]; then
+	  VISIOCYTEPLUGINSCOMPILE="YES"
+	  NEWMATCOMPILE="YES"      #ARG_LIB+=" -B"
+      ARG_VISIOCYTE+=" -B" 
+      ARG_PLUGINS+=" -B" 
+	  continue
+   fi
+
+   #the tiger machine is no longer supported, thus the following section may have compiling issue
+   if [ $arg == "tiger" ]; then
+   	  echo "Configure make for MACX 32bit for Tiger (OS X 10.4.x) " 
+      LOCAL_DIR=$PWD/common_lib
+      #ADD_PATH=" I_PATH=$LOCAL_DIR/include L_PATH=$LOCAL_DIR/lib_mac32_tiger"
+      ADD_PATH=" L_PATH=$LOCAL_DIR/lib_mac32_tiger"
+      VISIOCYTE_PRO_FILE="visiocyte_mactiger.pro"    # project file for qmake, 091012 PHC
+      continue
+   fi
+
+#32bit compiling
+ 
+   if [ $arg == "-n" ]; then
+   	  echo "Force to configure make for MACX -arch x86 (need 32-bit enabled Qt)"
+      
+      #ARG_LIB+=" ARCHS=i386 " 
+      VISIOCYTE_PRO_FILE="visiocyte.pro"    # project file for qmake
+      SYSTEMBITS="32" 
+
+      QMAKE_CONFIG+=" CONFIG+=x86"
+      LOCAL_DIR=$PWD/common_lib
+ 	  continue
+   fi
+
+#64bit compiling
+
+   if [ $arg == "-m" ]; then
+   	  echo "Force to configure make for MACX -arch x86_64 (need 64-bit enabled Qt, version 4.5.0 above)" 
+   	  echo "If you specify -m and -n together, the behavior of this batch script is NOT well defined!!"
+      
+      ARG_LIB+=" ARCH_x86_64=-archx86_64 " 
+      ARG_MYLIBTIFF+=" ARCH_x86_64=-archx86_64 " 
+      VISIOCYTE_PRO_FILE="visiocyte64.pro"    # project file for qmake
+      SYSTEMBITS="64" 
+ 
+      QMAKE_CONFIG+=" CONFIG+=x86_64 "
+      LOCAL_DIR=$PWD/common_lib
+      #ADD_PATH="VPATH=$LOCAL_DIR/include:$LOCAL_DIR/lib_mac64"
+      ADD_PATH=" I_PATH=$LOCAL_DIR/include L_PATH=$LOCAL_DIR/lib_mac64"
+ 	  continue
+   fi
+ 
+   #otherwise 
+   if [ ${arg:0:1} == "-" ]; then
+      ARG_LIB+=" $arg"
+      ARG_VISIOCYTE+=" $arg" 
+   else
+      QMAKE_CONFIG+=" CONFIG+=$arg" 
+   fi
+done;  
+
+ARG_LIB+=" $ADD_PATH"
+
+echo =========================================================
+echo "ARG_LIB      = "$ARG_LIB
+echo "QMAKE_CONFIG = "$QMAKE_CONFIG
+echo "ARG_VISIOCYTE      = "$ARG_VISIOCYTE 
+echo "ARG_PLUGINS  = "$ARG_PLUGINS
+echo =========================================================
+
+DOIT="YES"
+
+#prepare boost library
+
+if [ ! -d common_lib/include/boost ]; then
+  cd common_lib/src_packages
+  #tar zvxf boost_1_46_0.tar.gz
+  #mv boost_1_46_0/boost ../include/.
+  tar zvxf boost_1_57_0.tar.gz
+  mv boost_1_57_0/boost ../include/.
+  cd ../../
+fi
+
+#prepare the tiff library
+
+if [ $TIFFCOMPILE == "YES" -o ! -f common_lib/lib/libvisiocytetiff.a ]; then
+  cd common_lib/src_packages
+#  tar zxvf tiff-3.8.2.1.tar.gz
+  tar zxvf tiff-4.0.2.tar.gz
+  cd ../
+  TIFFPATH=`pwd`
+  cd build
+  if [ $SYSTEMBITS == "64" ]; then
+#    ../src_packages/tiff-3.8.2.1/configure -prefix=$TIFFPATH  CFLAGS="-arch x86_64" CXXFLAGS="-arch x86_64" --disable-jpeg --disable-zlib --disable-pixarlog
+   ../src_packages/tiff-4.0.2/configure -prefix=$TIFFPATH  CFLAGS="-arch x86_64" CXXFLAGS="-arch x86_64" --disable-jpeg --disable-zlib --disable-pixarlog
+  fi
+  if [ $SYSTEMBITS == "32" ]; then
+#    ../src_packages/tiff-3.8.2.1/configure -prefix=$TIFFPATH  CFLAGS="-arch i386" CXXFLAGS="-arch i386" --disable-jpeg --disable-zlib --disable-pixarlog
+    ../src_packages/tiff-4.0.2/configure -prefix=$TIFFPATH  CFLAGS="-arch i386" CXXFLAGS="-arch i386" --disable-jpeg --disable-zlib --disable-pixarlog
+  fi
+  make clean
+  make 
+  make install
+  
+  mv ../lib/libtiff.a ../lib/libvisiocytetiff.a
+  mv ../lib/libtiff.dylib ../lib/libvisiocytetiff.dylib
+
+  if [ ! -d ../lib_mac32 ]; then
+    mkdir ../lib_mac32
+  fi
+  if [ ! -d ../lib_mac64 ]; then
+    mkdir ../lib_mac64
+  fi
+  
+  if [ $SYSTEMBITS == "32" ]; then
+    cp ../lib/libvisiocytetiff.a ../lib_mac32/.
+    cp ../lib/libvisiocytetiff.dylib ../lib_mac32/.
+  fi
+  if [ $SYSTEMBITS == "64" ]; then
+    cp ../lib/libvisiocytetiff.a ../lib_mac64/.
+    cp ../lib/libvisiocytetiff.dylib ../lib_mac64/.
+  fi
+  
+  cd ../../
+fi
+
+#build the MYLIB library
+
+if [ $DOIT == "YES" -o ! -f common_lib/src_packages/mylib_tiff/libmylib.a ]; then
+  cd common_lib/src_packages/mylib_tiff 
+  if [ $MYLIBCOMPILE == "YES" ]; then  
+    make -f mylib_mac.makefile clean
+  fi
+  make -f mylib_mac.makefile $ARG_MYLIBTIFF
+  cd ../../../
+fi
+
+#prepare the fftw library
+
+if [ $FFTWCOMPILE == "YES" -o ! -f common_lib/lib/libvisiocytefftw3f.a ]; then
+  cd common_lib/src_packages
+  tar zxvf fftw-3.1.2.tar.gz
+  cd ../
+  FFTWPATH=`pwd`
+  cd build
+  if [ $SYSTEMBITS == "64" ]; then
+    ../src_packages/fftw-3.1.2/configure -prefix=$FFTWPATH  CFLAGS="-arch x86_64" CXXFLAGS="-arch x86_64" --enable-float --enable-threads --enable-shared
+  fi
+  if [ $SYSTEMBITS == "32" ]; then
+    ../src_packages/fftw-3.1.2/configure -prefix=$FFTWPATH  CFLAGS="-arch i386" CXXFLAGS="-arch i386" --enable-float --enable-threads --enable-shared
+  fi
+  make clean
+  make 
+  make install
+  
+  mv ../lib/libfftw3f.a ../lib/libvisiocytefftw3f.a
+  mv ../lib/libfftw3f_threads.a ../lib/libvisiocytefftw3f_threads.a
+
+  if [ ! -d ../lib_mac32 ]; then
+    mkdir ../lib_mac32
+  fi
+  if [ ! -d ../lib_mac64 ]; then
+    mkdir ../lib_mac64
+  fi
+  
+  if [ $SYSTEMBITS == "32" ]; then
+    cp ../lib/libvisiocytefftw3f.a ../lib_mac32/.
+    cp ../lib/libvisiocytefftw3f_threads.a ../lib_mac32/.
+  fi
+  if [ $SYSTEMBITS == "64" ]; then
+    cp ../lib/libvisiocytefftw3f.a ../lib_mac64/.
+    cp ../lib/libvisiocytefftw3f_threads.a ../lib_mac64/.
+  fi
+  
+  cd ../../
+fi
+
+#build the libnewmat library
+
+if [ $DOIT == "YES" ]; then
+  cd jba/c++ 
+  if [ $NEWMATCOMPILE == "YES" ]; then  
+    make -f jba.makefile clean
+  fi
+  make -f jba.makefile $ARG_LIB
+  cd ../../
+fi
+
+#build the visiocyte main program
+
+if [ $DOIT == "YES" ]; then
+  cd visiocyte
+  echo =========================================================
+  echo qmake -spec macx-g++ $VISIOCYTE_PRO_FILE \"$QMAKE_CONFIG\"
+  echo make $ARG_VISIOCYTE
+  echo =========================================================
+  
+  qmake -spec macx-g++ $VISIOCYTE_PRO_FILE $QMAKE_CONFIG
+  touch visiocyte_version_info.cpp
+
+  if [ $SYSTEMBITS == "32" ]; then
+    rm -fr visiocyte.app
+  fi
+  if [ $SYSTEMBITS == "64" ]; then
+    rm -fr visiocyte64.app
+  fi
+
+  make  $ARG_VISIOCYTE 
+  
+  if [ $SYSTEMBITS == "32" ]; then
+    cp visiocyte.icns visiocyte.app/Contents/Resources/.
+    cp visiocyte.Info.plist visiocyte.app/Contents/Info.plist
+  fi
+  if [ $SYSTEMBITS == "64" ]; then
+    cp visiocyte.icns visiocyte64.app/Contents/Resources/.  
+    cp visiocyte64.Info.plist visiocyte64.app/Contents/Info.plist
+  fi
+  
+  cd ../
+fi
+
+#copy some of the visiocyte programs to the released_plugin folders
+
+if [ $DOIT == "YES" ]; then
+  if [ $SYSTEMBITS == "32" ]; then
+    rm -fr ../visiocyte/visiocyte.app
+    cp -r ./visiocyte/visiocyte.app ../bin/.   #copy to the executable folder
+  fi
+  if [ $SYSTEMBITS == "64" ]; then
+    rm -fr ../visiocyte/visiocyte64.app
+    cp -r ./visiocyte/visiocyte64.app ../bin/. #copy to the executable folder
+  fi  
+  cd ../ # return to the root folder of the visiocyte codebase
+fi
+
+
+#build standard visiocyte plugins
+
+if [ -e released_plugins_more ] ; then
+  echo "Find released_plugins_more linker folder..."
+else
+  echo "CANNOT find released_plugins_more. Do not try to build the standard Visiocyte plugins."
+fi
+
+if [ $DOIT == "YES" ] && [ $SKIPVISIOCYTEPLUGINS == "NO" ] && [ -e released_plugins_more ] ; then
+  cd released_plugins_more/
+  echo =========================================================
+  echo "Now build standard visiocyte plugins"
+  echo =========================================================
+  if [ $VISIOCYTEPLUGINSCOMPILE == "YES" ]; then
+    rm -fr visiocyte/plugins
+    sh build_plugindemo.sh clean
+  fi
+  echo =========================================================
+  echo sh build_plugindemo.sh $ARG_PLUGINS    #$*
+  echo =========================================================
+  sh build_plugindemo.sh $ARG_PLUGINS         #$*    # for plugins, just pass the args to the batch compiling script
+
+  cd ../
+  if [ $SYSTEMBITS == "32" ]; then
+	mkdir -p bin/plugins
+    cp -fR released_plugins_more/visiocyte/plugins/* bin/plugins/     #copy to the executable folder
+  fi
+  if [ $SYSTEMBITS == "64" ]; then
+	mkdir -p bin/plugins  #../64bit
+    cp -fR released_plugins_more/visiocyte/plugins/* bin/plugins/     # ../64bit/ #copy to the executable folder
+  fi
+  rm -fr released_plugins_more/visiocyte/plugins
+fi
+
+#now try to move the 3rd party jar file(s) to bin folder
+
+#if [ -f bin/plugins/64bit/imageIO/load_image_using_Bioformats/loci_tools.jar ]; then
+  
+for jarfile in `find bin/plugins -name \*.jar`; 
+do
+    echo "Find file [$jarfile]"
+    mv $jarfile bin/.
+done;
+
+
+#now automatically execute visiocyte
+
+if [ $DOIT == "YES" ] && [ $SKIPVISIOCYTEAPP == "NO" ]; then
+  if [ $SYSTEMBITS == "32" ]; then
+    open bin/visiocyte.app &
+  fi
+  if [ $SYSTEMBITS == "64" ]; then
+    open bin/visiocyte64.app &
+  fi
+fi
+
+

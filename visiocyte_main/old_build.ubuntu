@@ -1,0 +1,40 @@
+#!/bin/bash
+#@echo off
+#echo -----------------------------------------------------------------
+#echo This is a shell program to build the visiocyte program for ubuntu
+#echo Based on Mac version by Hanchuan Peng
+#echo 2008-11-08, by Hanchuan Peng
+#echo -----------------------------------------------------------------
+#echo on
+
+LOCAL_PATH=/usr/local
+#LOCAL_PATH=$PWD/common_lib
+# ARGS="$* VPATH=$LOCAL_PATH/include:$LOCAL_PATH/lib"
+ARGS="$* CPATH=$LOCAL_PATH/include LIBRARY_PATH=$LOCAL_PATH/lib"
+QARGS="CONFIG+=$1"
+#COPY_BIN="cp -f visiocyte/release/visiocyte.exe common_lib/bin"
+#if [ $# -ge 1 ]; then
+#   if [ $1 == "debug" ]; then
+#      COPY_BIN="cp -f visiocyte/debug/visiocyte.exe common_lib/bin"
+#   fi
+#fi
+echo make $ARGS
+echo ==========================================================
+
+cd jba/c++ 
+make -f jba.makefile $ARGS  
+cd ../../
+
+cd visiocyte
+echo qmake visiocyte.pro \"$QARGS\"
+echo =========================================================
+qmake -unix visiocyte.pro $QARGS
+# qmake -unix visiocyte_test.pro $QARGS 
+make $ARGS
+cd ../
+
+#echo $COPY_BIN
+#$COPY_BIN
+
+
+

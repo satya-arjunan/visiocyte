@@ -1,0 +1,12 @@
+
+set(ENV{PYTHONPATH} "@VISIOCYTE_PYTHON_CONSOLE_PLUGIN_OUTPUT_DIR@")
+execute_process(COMMAND 
+    "@EPYDOC_EXECUTABLE@"
+    --html
+    visiocyte
+    -o "@DOC_DIR@"
+    --name "VISIOCYTE python"
+    --url "http://penglab.janelia.org/proj/visiocyte/VISIOCYTE/About_VISIOCYTE.html"
+    @EPYDOC_OPTIONS@
+)
+
