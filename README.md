@@ -1,7 +1,7 @@
 
 Build on Ubuntu
 ===============
-1. sudo apt install qt4-qmake qt4-dev-tools qt4-demos libglm-dev libjpeg-dev libtiff-dev libhdf5-dev
+1. sudo apt install qt4-qmake qt4-dev-tools qt4-demos libglm-dev libglew-dev libjpeg-dev libtiff-dev libhdf5-dev
 2. export QT_SELECT=qt4
 3. git clone --recursive git@github.com:/satya-arjunan/visiocyte.git
 4. mkdir build
