@@ -8501,7 +8501,7 @@ typedef void (GLAPIENTRY * PFNGLBLENDFUNCSEPARATEEXTPROC) (GLenum sfactorRGB, GL
 /* -------------------------- GL_EXT_blend_minmax -------------------------- */
 
 #ifndef GL_EXT_blend_minmax
-#define GL_EXT_blend_minmax 1
+#define GL_EXT_blend_misnmax 1
 
 #define GL_FUNC_ADD_EXT 0x8006
 #define GL_MIN_EXT 0x8007
@@ -8510,7 +8510,7 @@ typedef void (GLAPIENTRY * PFNGLBLENDFUNCSEPARATEEXTPROC) (GLenum sfactorRGB, GL
 
 typedef void (GLAPIENTRY * PFNGLBLENDEQUATIONEXTPROC) (GLenum mode);
 
-#define glBlendEquationEXT GLEW_GET_FUN(__glewBlendEquationEXT)
+#define glBlendEquationsEXT GLEW_GET_FUN(__glewBlendEquationEXT)
 
 #define GLEW_EXT_blend_minmax GLEW_GET_VAR(__GLEW_EXT_blend_minmax)
 

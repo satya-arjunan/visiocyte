@@ -77,7 +77,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 	#error gl.h included before glee.h
 #endif
 
-#ifdef __glext_h_
+#ifdef __gl_glext_h_
 	#error glext.h included before glee.h
 #endif
 
@@ -108,8 +108,8 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 #elif defined(__APPLE__) || defined(__APPLE_CC__) || defined(__DARWIN__)
 	#include <OpenGL/gl.h>
 #else // GLX
-	#define __glext_h_  /* prevent glext.h from being included  */
-	#define __glxext_h_ /* prevent glxext.h from being included */
+	#define __gl_glext_h_  /* prevent glext.h from being included  */
+	#define __glx_glxext_h_ /* prevent glxext.h from being included */
 	#define GLX_GLXEXT_PROTOTYPES
 	#include <GL/gl.h>
 	#include <GL/glx.h>
