@@ -5,7 +5,6 @@
 #include "../3drenderer/visiocyter_glwidget.h"
 #include "../geometry/Rotation3D.h"
 #include "../utility/FooDebug.h"
-#include "glew.h"
 #include <stdint.h>
 
 RendererNeuronAnnotator::RendererNeuronAnnotator(void* w)
